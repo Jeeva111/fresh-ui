@@ -156,6 +156,7 @@ class Button extends StatelessWidget {
   final double widthFactor;
   final double heightFactor;
   final Color btnColor;
+  final Color btnFgColor;
   final void Function() onPressed;
 
   Button(
@@ -164,7 +165,8 @@ class Button extends StatelessWidget {
       required this.onPressed,
       this.widthFactor = 0.4,
       this.heightFactor = 0.06,
-      this.btnColor = const Color(0xff9E7D49)})
+      this.btnColor = const Color(0xff9E7D49),
+      this.btnFgColor = Colors.white})
       : super(key: key);
 
   @override
@@ -175,7 +177,7 @@ class Button extends StatelessWidget {
           minimumSize: MaterialStateProperty.all<Size>(Size(
               screenSize.width * widthFactor,
               screenSize.height * heightFactor)),
-          foregroundColor: FormThemes.buttonFgColor,
+          foregroundColor: FormThemes.buttonFgColor(btnFgColor),
           backgroundColor: FormThemes.buttonBgColor(btnColor),
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
               RoundedRectangleBorder(

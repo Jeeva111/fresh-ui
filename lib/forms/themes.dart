@@ -42,8 +42,8 @@ class FormThemes {
   // Buttons
   static MaterialStateProperty<Color> Function(Color btnBGColor) buttonBgColor =
       (btnBGColor) => MaterialStateProperty.all<Color>(btnBGColor);
-  static MaterialStateProperty<Color> buttonFgColor =
-      MaterialStateProperty.all<Color>(Colors.white);
+  static MaterialStateProperty<Color> Function(Color btnFGColor) buttonFgColor =
+      (btnFGColor) => MaterialStateProperty.all<Color>(btnFGColor);
 
   // Form input
   static const Color formLabelColor = appLabelColor;
