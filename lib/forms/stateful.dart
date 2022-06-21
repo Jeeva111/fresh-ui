@@ -35,9 +35,20 @@ class _FormRadioState extends State<FormRadio> {
   @override
   void initState() {
     super.initState();
-    dynamicKeys = getDynamicKeys(widget.options);
-    objectLength = dynamicKeys.length;
+    if (widget.options.isNotEmpty) {
+      dynamicKeys = getDynamicKeys(widget.options);
+      objectLength = dynamicKeys.length;
+    }
     if (widget.selectedIndex != -1) selectedIndex.add(widget.selectedIndex);
+  }
+
+  @override
+  void didUpdateWidget(FormRadio oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.options.isNotEmpty) {
+      dynamicKeys = getDynamicKeys(widget.options);
+      objectLength = dynamicKeys.length;
+    }
   }
 
   void handleOnPress(index) {
@@ -51,7 +62,7 @@ class _FormRadioState extends State<FormRadio> {
   @override
   Widget build(BuildContext context) {
     final double height = MediaQuery.of(context).size.height;
-    return objectLength >= 2
+    return objectLength >= 2 && dynamicKeys.isNotEmpty
         ? Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.max,
@@ -108,11 +119,13 @@ class FormDropdown extends StatefulWidget {
   final String hintText;
   final String? errorText;
   final List<Map<String, String>> dropDownLists;
+  Function(Map<String, String>?)? onSelect;
   FormDropdown(
       {Key? key,
       this.dropDownIcon = const Icon(Icons.expand_more),
       required this.hintText,
       required this.dropDownLists,
+      this.onSelect,
       this.errorText});
 
   @override
@@ -129,11 +142,19 @@ class _FormDropdownState extends State<FormDropdown> {
   @override
   void initState() {
     super.initState();
-    dynamicKeys = getDynamicKeys(widget.dropDownLists);
-    objectLength = dynamicKeys.length;
+
     //selected = widget.dropDownLists.first;
     // selected = {dynamicKeys[0]: "", dynamicKeys[1]: widget.hintText};
     // widget.dropDownLists.insert(0, selected);
+  }
+
+  @override
+  void didUpdateWidget(FormDropdown oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.dropDownLists.isNotEmpty) {
+      dynamicKeys = getDynamicKeys(widget.dropDownLists);
+      objectLength = dynamicKeys.length;
+    }
   }
 
   @override
@@ -143,40 +164,49 @@ class _FormDropdownState extends State<FormDropdown> {
             (Map<String, String> lists) {
       return DropdownMenuItem<Map<String, String>>(
         value: lists,
-        child: Text(lists[dynamicKeys[1]]!,
+        child: Text(dynamicKeys.isNotEmpty ? lists[dynamicKeys[1]]! : "",
             style: const TextStyle(fontSize: 16.0)),
       );
     }).toList();
 
-    return Container(
-      margin: const EdgeInsets.only(top: 10.0, bottom: 10.0),
-      child: Material(
-        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-        elevation: 1,
-        child: DropdownButtonFormField<Map<String, String>>(
-            value: selected,
-            icon: widget.dropDownIcon,
-            style: const TextStyle(color: FormThemes.appTheme),
-            elevation: 1,
-            hint: Text(widget.hintText,
-                style: const TextStyle(
-                    color: FormThemes.appTheme, fontSize: 16.0)),
-            decoration: InputDecoration(
-                focusedBorder: FormThemes.formDropdownBorder['focusedBorder'],
-                border: FormThemes.formDropdownBorder['border'],
-                errorBorder: FormThemes.formDropdownBorder['errorBorder'],
-                disabledBorder: FormThemes.formDropdownBorder['disabledBorder'],
-                enabledBorder: FormThemes.formDropdownBorder['enabledBorder'],
-                errorText: widget.errorText,
-                hintStyle: const TextStyle(color: FormThemes.formInputColor)),
-            onChanged: (Map<String, String>? newValue) {
-              // setState(() {
-              //   dropdownValue = newValue!;
-              // });
-            },
-            items: dropDownItems),
-      ),
-    );
+    return widget.dropDownLists.isNotEmpty && dynamicKeys.isNotEmpty
+        ? Container(
+            margin: const EdgeInsets.only(top: 10.0, bottom: 10.0),
+            child: Material(
+              borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+              elevation: 1,
+              child: DropdownButtonFormField<Map<String, String>>(
+                  value: selected,
+                  icon: widget.dropDownIcon,
+                  style: const TextStyle(color: FormThemes.appTheme),
+                  elevation: 1,
+                  hint: Text(widget.hintText,
+                      style: const TextStyle(
+                          color: FormThemes.appTheme, fontSize: 16.0)),
+                  decoration: InputDecoration(
+                      focusedBorder:
+                          FormThemes.formDropdownBorder['focusedBorder'],
+                      border: FormThemes.formDropdownBorder['border'],
+                      errorBorder: FormThemes.formDropdownBorder['errorBorder'],
+                      disabledBorder:
+                          FormThemes.formDropdownBorder['disabledBorder'],
+                      enabledBorder:
+                          FormThemes.formDropdownBorder['enabledBorder'],
+                      errorText: widget.errorText,
+                      hintStyle:
+                          const TextStyle(color: FormThemes.formInputColor)),
+                  onChanged: (Map<String, String>? newValue) {
+                    if (widget.onSelect != null) {
+                      widget.onSelect!(newValue);
+                    }
+                    // setState(() {
+                    //   dropdownValue = newValue!;
+                    // });
+                  },
+                  items: dropDownItems),
+            ),
+          )
+        : const SizedBox.shrink();
   }
 }
 
@@ -205,9 +235,11 @@ class _FormCheckboxState extends State<FormCheckbox> {
   List<int> checkedIndexes = [];
 
   @override
-  void initState() {
-    super.initState();
-    dynamicKeys = getDynamicKeys(widget.checkBoxList);
+  void didUpdateWidget(FormCheckbox oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.checkBoxList.isNotEmpty) {
+      dynamicKeys = getDynamicKeys(widget.checkBoxList);
+    }
   }
 
   void handleCheck(int index) {
@@ -220,6 +252,7 @@ class _FormCheckboxState extends State<FormCheckbox> {
     setState(() {
       checkedIndexes;
     });
+    widget.selected(checkedIndexes);
   }
 
   @override
@@ -234,72 +267,75 @@ class _FormCheckboxState extends State<FormCheckbox> {
       if (states.any(interactiveStates.contains)) {
         return FormThemes.appTheme;
       }
-      return Color(0xffD4D4D4);
+      return const Color(0xffD4D4D4);
     }
 
-    return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          Text(
-            widget.label,
-            style: const TextStyle(color: FormThemes.formLabelColor),
-          ),
-          const SizedBox(width: 20),
-          widget.gridView
-              ? StaggeredGrid.count(
-                  crossAxisCount: widget.crossAxisCount,
-                  mainAxisSpacing: 4,
-                  crossAxisSpacing: 4,
-                  children: [
-                    for (int index = 0;
-                        index < widget.checkBoxList.length;
-                        index++)
-                      Row(children: <Widget>[
-                        Checkbox(
-                          checkColor: Colors.white,
-                          fillColor:
-                              MaterialStateProperty.resolveWith(getColor),
-                          value: isChecked,
-                          onChanged: (bool? value) {
-                            print(value);
-                          },
-                        ),
-                        Text(
-                          widget.checkBoxList[index][dynamicKeys[1]]!,
-                          style:
-                              const TextStyle(color: FormThemes.formLabelColor),
-                        )
-                      ])
-                  ],
-                )
-              : Wrap(
-                  children: [
-                    for (int index = 0;
-                        index < widget.checkBoxList.length;
-                        index++)
-                      Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-                        Checkbox(
-                          checkColor: Colors.white,
-                          fillColor:
-                              MaterialStateProperty.resolveWith(getColor),
-                          value: checkedIndexes.contains(index),
-                          onChanged: (bool? value) {
-                            handleCheck(index);
-                          },
-                        ),
-                        GestureDetector(
-                          onTap: () => handleCheck(index),
-                          child: Text(
-                            widget.checkBoxList[index][dynamicKeys[1]]!,
-                            style: const TextStyle(
-                                color: FormThemes.formLabelColor),
-                          ),
-                        )
-                      ])
-                  ],
-                )
-        ]);
+    return widget.checkBoxList.isNotEmpty && dynamicKeys.isNotEmpty
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+                Text(
+                  widget.label,
+                  style: const TextStyle(color: FormThemes.formLabelColor),
+                ),
+                const SizedBox(width: 20),
+                widget.gridView
+                    ? StaggeredGrid.count(
+                        crossAxisCount: widget.crossAxisCount,
+                        mainAxisSpacing: 4,
+                        crossAxisSpacing: 4,
+                        children: [
+                          for (int index = 0;
+                              index < widget.checkBoxList.length;
+                              index++)
+                            Row(children: <Widget>[
+                              Checkbox(
+                                checkColor: Colors.white,
+                                fillColor:
+                                    MaterialStateProperty.resolveWith(getColor),
+                                value: isChecked,
+                                onChanged: (bool? value) {
+                                  print(value);
+                                },
+                              ),
+                              Text(
+                                widget.checkBoxList[index][dynamicKeys[1]]!,
+                                style: const TextStyle(
+                                    color: FormThemes.formLabelColor),
+                              )
+                            ])
+                        ],
+                      )
+                    : Wrap(
+                        children: [
+                          for (int index = 0;
+                              index < widget.checkBoxList.length;
+                              index++)
+                            Row(mainAxisSize: MainAxisSize.min, children: <
+                                Widget>[
+                              Checkbox(
+                                checkColor: Colors.white,
+                                fillColor:
+                                    MaterialStateProperty.resolveWith(getColor),
+                                value: checkedIndexes.contains(index),
+                                onChanged: (bool? value) {
+                                  handleCheck(index);
+                                },
+                              ),
+                              GestureDetector(
+                                onTap: () => handleCheck(index),
+                                child: Text(
+                                  widget.checkBoxList[index][dynamicKeys[1]]!,
+                                  style: const TextStyle(
+                                      color: FormThemes.formLabelColor),
+                                ),
+                              )
+                            ])
+                        ],
+                      )
+              ])
+        : const SizedBox.shrink();
   }
 }
 
