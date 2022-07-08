@@ -133,6 +133,7 @@ class FormDropdown extends StatefulWidget {
 }
 
 class _FormDropdownState extends State<FormDropdown> {
+  final GlobalKey<FormFieldState> _key = GlobalKey<FormFieldState>();
   int selectedIndex = -1;
   Map<String, String>? selected;
   List<String> dynamicKeys = [];
@@ -154,20 +155,24 @@ class _FormDropdownState extends State<FormDropdown> {
     if (widget.dropDownLists.isNotEmpty) {
       dynamicKeys = getDynamicKeys(widget.dropDownLists);
       objectLength = dynamicKeys.length;
+    } else {
+      _key.currentState?.reset();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    dropDownItems = widget.dropDownLists
-        .map<DropdownMenuItem<Map<String, String>>>(
-            (Map<String, String> lists) {
-      return DropdownMenuItem<Map<String, String>>(
-        value: lists,
-        child: Text(dynamicKeys.isNotEmpty ? lists[dynamicKeys[1]]! : "",
-            style: const TextStyle(fontSize: 16.0)),
-      );
-    }).toList();
+    if (widget.dropDownLists.isNotEmpty && dynamicKeys.isNotEmpty) {
+      dropDownItems = widget.dropDownLists
+          .map<DropdownMenuItem<Map<String, String>>>(
+              (Map<String, String> lists) {
+        return DropdownMenuItem<Map<String, String>>(
+          value: lists,
+          child: Text(dynamicKeys.isNotEmpty ? lists[dynamicKeys[1]]! : "",
+              style: const TextStyle(fontSize: 16.0)),
+        );
+      }).toList();
+    }
 
     return widget.dropDownLists.isNotEmpty && dynamicKeys.isNotEmpty
         ? Container(
@@ -176,6 +181,7 @@ class _FormDropdownState extends State<FormDropdown> {
               borderRadius: const BorderRadius.all(Radius.circular(10.0)),
               elevation: 1,
               child: DropdownButtonFormField<Map<String, String>>(
+                  key: _key,
                   value: selected,
                   icon: widget.dropDownIcon,
                   style: const TextStyle(color: FormThemes.appTheme),
@@ -365,7 +371,7 @@ class _FormDatepickerState extends State<FormDatepicker> {
     final DateTime? picked = await showDatePicker(
         context: context,
         initialDate: selectedDate,
-        firstDate: DateTime(2015, 8),
+        firstDate: DateTime.now(),
         lastDate: DateTime(2101));
     if (picked != null && picked != selectedDate) {
       widget.onSelect(DateFormat(widget.dateFormat).format(picked));

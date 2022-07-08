@@ -76,6 +76,7 @@ class FormInput extends StatelessWidget {
   final Color textColor;
   final bool readOnly;
   final Widget? rightIcon;
+  final FocusNode? focusNode;
   final void Function(String) onTextChange;
   final void Function()? onTap;
 
@@ -92,6 +93,7 @@ class FormInput extends StatelessWidget {
       this.hintText,
       this.errorText,
       this.rightIcon,
+      this.focusNode,
       this.textColor = FormThemes.formLabelColor});
 
   @override
@@ -118,6 +120,7 @@ class FormInput extends StatelessWidget {
               elevation: 1,
               borderRadius: const BorderRadius.all(Radius.circular(10.0)),
               child: TextField(
+                focusNode: focusNode,
                 readOnly: readOnly,
                 onTap: onTap,
                 onChanged: onTextChange,

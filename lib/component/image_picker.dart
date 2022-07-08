@@ -21,10 +21,12 @@ class PickedImage {
 class ImagePick extends StatefulWidget {
   final String? title;
   final bool isMultiple;
+  final PickedImage? previewImage;
   final void Function() onClose;
   final void Function(List<PickedImage> pickedImage) onSave;
   ImagePick(
       {this.title,
+      this.previewImage,
       this.isMultiple = false,
       required this.onClose,
       required this.onSave});
@@ -34,6 +36,18 @@ class ImagePick extends StatefulWidget {
 
 class _ImagePickScreenState extends State<ImagePick> {
   List<PickedImage> pickedImages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    pickedImages.clear();
+    if (widget.previewImage != null) {
+      print(widget.previewImage!.imagePath);
+      setState(() {
+        pickedImages.add(widget.previewImage!);
+      });
+    }
+  }
 
   void imagePicker(ImageSource imageSourceType) async {
     final ImagePicker _picker = ImagePicker();
