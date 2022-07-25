@@ -437,8 +437,17 @@ class _FormTimepickerState extends State<FormTimepicker> {
       initialTime: selectedTime,
     );
     if (picked != null && picked != selectedTime) {
-      String pickedTime = picked.format(context).padLeft(8, "0");
-      widget.onSelect(pickedTime);
+      bool is24HoursFormat = MediaQuery.of(context).alwaysUse24HourFormat;
+      String pickedTime = "", time12HourFormat = "";
+      if (is24HoursFormat) {
+        pickedTime = "${picked.hour}:${picked.minute}";
+        time12HourFormat =
+            "${(picked.hourOfPeriod).toString().padLeft(2, '0')}:${(picked.minute).toString().padLeft(2, "0")} ${picked.period == DayPeriod.am ? 'AM' : 'PM'}";
+      } else {
+        pickedTime = picked.format(context).padLeft(8, "0");
+        time12HourFormat = pickedTime;
+      }
+      widget.onSelect(time12HourFormat);
       timePickerController.value = TextEditingValue(text: pickedTime);
       setState(() {
         selectedTime = picked;
